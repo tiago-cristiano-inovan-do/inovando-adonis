@@ -1,0 +1,59 @@
+{
+  "name": "inovando-adonis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/providers/InovandoProvider.js",
+  "types": "build/adonis-typings/index.d.ts",
+  "scripts": {
+    "mrm": "mrm --preset=@adonisjs/mrm-preset",
+    "pretest": "npm run lint",
+    "test": "node -r @adonisjs/require-ts/build/register bin/test.ts",
+    "clean": "del-cli build",
+    "build": "npm run compile",
+    "prepublishOnly": "npm run build",
+    "compile": "npm run clean && tsc",
+    "copy:files": "npm run copy:instructions_md",
+    "copy:instructions_md": "copyfiles \"instructions.md\" build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@adonisjs/core": "^5.4.2",
+    "@adonisjs/lucid": "^15.0.1",
+    "@adonisjs/mrm-preset": "^5.0.3",
+    "@adonisjs/require-ts": "^2.0.12",
+    "@types/node": "^18.0.3",
+    "del-cli": "^4.0.1",
+    "mrm": "^4.0.0",
+    "typescript": "^4.7.4"
+  },
+  "peerDependencies": {
+    "@adonisjs/core": "^5.1.0",
+    "@adonisjs/lucid": "^15.0.1"
+  },
+  "adonisjs": {
+    "instructionsMd": "./build/instructions.md",
+    "types": "inovando-adonis",
+    "providers": [
+      "inovando-adonis"
+    ]
+  },
+  "mrmConfig": {
+    "core": false,
+    "license": "MIT",
+    "services": [],
+    "minNodeVersion": "16.13.1",
+    "probotApps": []
+  },
+  "files": [
+    "build/adonis-typings",
+    "build/providers",
+    "build/src",
+    "build/instructions.md",
+    "build/templates"
+  ],
+  "dependencies": {
+    "copyfiles": "^2.4.1"
+  }
+}
