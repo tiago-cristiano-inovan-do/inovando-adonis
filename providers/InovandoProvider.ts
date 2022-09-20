@@ -1,22 +1,30 @@
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
-export default class InovandoProvider {
-  public static needsApplication = true
+import { ApplicationContract } from "@ioc:Adonis/Core/Application";
 
-  constructor(protected app: ApplicationContract) { }
+export default class InovandoProvider {
+  public static needsApplication = true;
+
+  constructor(protected app: ApplicationContract) {}
 
   public async register() {
+    const { CrudController } = await import(
+      "../src/Controllers/CrudController"
+    );
+    const Crud = await import("../src/Decorators/CrudController");
 
-    const { InovandoController } = await import('../src/Controllers/InovandoController')
-
-    const { CrudRepository } = await import('../src/Repositories/CrudRepository')
+    const { CrudRepository } = await import(
+      "../src/Repositories/CrudRepository"
+    );
 
     this.app.container.bind("Inovando/Controller", () => {
-      return InovandoController
+      return CrudController;
     });
 
     this.app.container.bind("Inovando/CrudRepository", () => {
-      return CrudRepository
+      return CrudRepository;
     });
 
+    this.app.container.bind("Inovando/Crud/Decorator", () => {
+      return { Crud };
+    });
   }
 }

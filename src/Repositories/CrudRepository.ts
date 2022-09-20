@@ -1,54 +1,47 @@
 import { LucidModel } from "@ioc:Adonis/Lucid/Orm";
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-
 import ReadRepository from "./ReadRepository";
 import WriteRepository from "./WriteRepository";
-interface RepositoryOption {
-  model: LucidModel;
-}
 
-abstract class CrudRepository
-  implements ReadRepository, WriteRepository {
-  protected model;
+interface BaseRepository<Model>
+  extends ReadRepository<Model>,
+    WriteRepository<Model> {}
+
+abstract class CrudRepository<Model extends LucidModel>
+  implements BaseRepository<Model>
+{
+  protected model: Model;
   protected errosRequest;
 
-  constructor({ model }: RepositoryOption) {
-    this.model = model;
-  }
-
-  destroy(id: string): void {
-    console.log(`removing ${id}`);
-    throw new Error("Method not implemented.");
-  }
-
-  public async index(ctx: HttpContextContract): Promise<[]> {
+  public async index(ctx: HttpContextContract): Promise<[Model]> {
     const page = ctx.request.input("page", 1);
     const perPage = ctx.request.input("perPage", 10);
     return this.model.filter(ctx.request.qs()).paginate(page, perPage);
   }
 
-  public async store({ fillableData, ctx }) {
-    const newModel = new this.model();
-    newModel.fill(fillableData);
-    const createdModel = await newModel.save();
-    await this.afterSave({ model: createdModel, fillableData, ctx });
-    return createdModel;
+  public async show(id: Partial<Model>): Promise<any> {
+    const query = this.model.query();
+    query.where({ id }).where({ status: true });
+    const item = await query.first();
+    return item;
   }
 
-  public async update(ctx: HttpContextContract) {
+  public async store({ fillableData: [] }): Promise<Model> {
+    throw new Error("Method not implemented.");
+  }
+
+  update(ctx: HttpContextContract): Promise<Model> {
     console.log(ctx);
-    const newModel = new this.model();
-    const createdModel = await newModel.save();
-    return createdModel;
+    throw new Error("Method not implemented.");
   }
 
-  public async show({ params }: HttpContextContract) {
-    const { id } = params;
-    return this.model.findOrFail(id);
+  destroy(id: string | number): void {
+    console.log("Deleting", id);
+    throw new Error("Method not implemented.");
   }
 
   public async afterSave(params) {
     return params;
   }
 }
-export { CrudRepository }
+export { CrudRepository };
