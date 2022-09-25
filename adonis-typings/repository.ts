@@ -4,7 +4,7 @@ declare module "@ioc:Inovando/CrudRepository" {
   import WriteRepository from "@ioc:Inovando/WriteRepository";
   import ReadRepository from "@ioc:Inovando/ReadRepository";
 
-  interface BaseRepository<Model>
+  export interface BaseRepository<Model>
     extends ReadRepository<Model>,
       WriteRepository<Model> {}
   abstract class CrudRepository<Model extends LucidModel>

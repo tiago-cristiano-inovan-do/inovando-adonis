@@ -10,7 +10,7 @@ declare module "@ioc:Inovando/Controller" {
   {
     protected errorsRequest: any;
     protected transformer: any;
-    protected repository: CrudRepository<Model>;
+    protected repository: any;
     protected fillableProps: string[];
     protected validators: {
       store: {

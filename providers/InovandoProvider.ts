@@ -5,26 +5,46 @@ export default class InovandoProvider {
 
   constructor(protected app: ApplicationContract) {}
 
-  public async register() {
-    const { CrudController } = await import(
-      "../src/Controllers/CrudController"
-    );
-    const Crud = await import("../src/Decorators/CrudController");
+  public async ready() {
+    try {
+      const { CrudController } = await import(
+        "../src/Controllers/CrudController"
+      );
+      const CrudControllerDecorator = await import(
+        "../src/Decorators/CrudController"
+      );
 
-    const { CrudRepository } = await import(
-      "../src/Repositories/CrudRepository"
-    );
+      const { CrudRepository } = await import(
+        "../src/Repositories/CrudRepository"
+      );
 
-    this.app.container.bind("Inovando/Controller", () => {
-      return CrudController;
-    });
+      const { default: CrudRepositoryDecorator } = await import(
+        "../src/Decorators/CrudRepository"
+      );
 
-    this.app.container.bind("Inovando/CrudRepository", () => {
-      return CrudRepository;
-    });
+      this.app.container.bind("Inovando/Controller", () => {
+        return CrudController;
+      });
 
-    this.app.container.bind("Inovando/Crud/Decorator", () => {
-      return { Crud };
-    });
+      this.app.container.bind("Inovando/CrudRepository", () => {
+        return CrudRepository;
+      });
+
+      this.app.container.bind("Inovando/Crud/Decorator/Controller", () => {
+        console.log(
+          "%cInovandoProvider.ts line:34 Object",
+          "color: white; background-color: #007acc;",
+          CrudControllerDecorator
+        );
+        return CrudControllerDecorator;
+      });
+
+      this.app.container.bind("Inovando/RepositoryDecorator", () => {
+        return CrudRepositoryDecorator;
+      });
+    } catch (error) {
+      console.log("error on bindgs");
+      console.log(error);
+    }
   }
 }
