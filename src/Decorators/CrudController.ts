@@ -49,6 +49,12 @@ export default function CrudController(
           .collection(rest, constructor.prototype.transformer),
       };
     };
+    constructor.prototype.show = async (ctx: HttpContextContract) => {
+      const { id } = ctx.params;
+      console.log("controller show", { id });
+      const showItem = await constructor.prototype.repository.show(id);
+      return ctx.transform.item(showItem, constructor.prototype.transformer);
+    };
     constructor.prototype.save = async (
       ctx: HttpContextContract,
       method,
@@ -73,7 +79,10 @@ export default function CrudController(
     };
 
     constructor.prototype.update = async (ctx: HttpContextContract) => {
-      return this.save(ctx, "update", 200);
+      console.log("update");
+      const body = ctx.request.only(constructor.prototype.updateProps);
+      const { id } = ctx.params;
+      return this.save(ctx, "update", 200, { body, id });
     };
   };
 }
