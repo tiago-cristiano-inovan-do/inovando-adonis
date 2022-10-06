@@ -1,7 +1,1 @@
-import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-
-impor InovandoController from ' @Inovando/Controller'
-import UserRepository from '@ioc:UserRepository'
-export default class UsersController extend InovandoController {
-
-}
+const item = []

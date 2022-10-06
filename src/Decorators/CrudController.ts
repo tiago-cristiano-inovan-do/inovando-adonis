@@ -1,4 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import BaseTransformer from "../Transformers/BaseTranformer";
+import NoValidator from "../Validators/NoValidator";
 
 interface CrudControllerDecoratorInterface {
   storeProps: Array<string>;
@@ -8,81 +10,82 @@ interface CrudControllerDecoratorInterface {
   transformer?: any;
 }
 
-/**
- *  Crud Decorator abstraction
- * @param storeProps props used to store de model
- * @returns
- */
+const defaultValidators = {
+  store: NoValidator,
+  update: NoValidator,
+};
+
 export default function CrudController(
   props: CrudControllerDecoratorInterface
 ) {
-  return function (constructor: Function) {
-    if (!props.repository) {
-      throw new Error(
-        "Inform the repository for de crud decorators @Crud({repository: 'YourRepository'})"
-      );
-    }
+  return <T extends { new (...args: any[]): {} }>(classConstructor: T) => {
+    return class extends classConstructor {
+      public storeProps = props.storeProps;
+      public updateProps = props.updateProps;
+      public repository = props.repository;
+      public validators = props.validators || defaultValidators;
+      public transformer = props.transformer;
+      public errorsRequest: any;
+      constructor(...args: any[]) {
+        super(...args);
+      }
+      public async index(ctx: HttpContextContract) {
+        const { transform } = ctx;
+        const qs = ctx.request.qs();
+        const list = await this.repository.index({ qs });
+        const { currentPage, firstPage, lastPage, perPage, total, ...rest } =
+          list;
 
-    constructor.prototype.storeProps = props.storeProps;
-    constructor.prototype.updateProps = props.updateProps;
-    constructor.prototype.repository = props.repository;
-    constructor.prototype.validators = props.validators;
-    constructor.prototype.transformer = props.transformer;
-    constructor.prototype.index = async (ctx: HttpContextContract) => {
-      const { transform } = ctx;
-      const list = await constructor.prototype.repository.index(ctx);
-      const { currentPage, firstPage, lastPage, perPage, total, ...rest } =
-        list;
+        const pagination = {
+          page: currentPage,
+          firstPage,
+          lastPage,
+          perPage,
+          total,
+        };
 
-      const pagination = {
-        page: currentPage,
-        firstPage,
-        lastPage,
-        perPage,
-        total,
-      };
-
-      return {
-        pagination,
-        data: await transform
-          .withContext(ctx)
-          .collection(rest, constructor.prototype.transformer),
-      };
-    };
-    constructor.prototype.show = async (ctx: HttpContextContract) => {
-      const { id } = ctx.params;
-      console.log("controller show", { id });
-      const showItem = await constructor.prototype.repository.show(id);
-      return ctx.transform.item(showItem, constructor.prototype.transformer);
-    };
-    constructor.prototype.save = async (
-      ctx: HttpContextContract,
-      method,
-      statusReturn,
-      body: any
-    ) => {
-      const validRequest = await ctx.request.validate(
-        constructor.prototype.validators[method]
-      );
-      if (!validRequest) {
-        return ctx.response.badRequest(constructor.prototype.errorsRequest);
+        return {
+          pagination,
+          data: await transform
+            .withContext(ctx)
+            .collection(rest, this.transformer),
+        };
       }
 
-      const newObject = await constructor.prototype.repository[method](body);
+      public async show(ctx: HttpContextContract) {
+        const { id } = ctx.params;
+        const showItem = await this.repository.show(id);
+        return ctx.transform.item(showItem, this.transformer);
+      }
 
-      return ctx.response.status(statusReturn).json(newObject);
-    };
+      public async save(
+        ctx: HttpContextContract,
+        method,
+        statusReturn,
+        body: any
+      ) {
+        const validRequest = await ctx.request.validate(
+          this.validators[method]
+        );
+        if (!validRequest) {
+          return ctx.response.badRequest(this.errorsRequest);
+        }
 
-    constructor.prototype.store = async (ctx: HttpContextContract) => {
-      const body = ctx.request.only(constructor.prototype.storeProps);
-      return constructor.prototype.save(ctx, "store", 201, body);
-    };
+        const newObject = await this.repository[method](body);
 
-    constructor.prototype.update = async (ctx: HttpContextContract) => {
-      console.log("update");
-      const body = ctx.request.only(constructor.prototype.updateProps);
-      const { id } = ctx.params;
-      return this.save(ctx, "update", 200, { body, id });
+        return ctx.response.status(statusReturn).json(newObject);
+      }
+
+      public async store(ctx: HttpContextContract) {
+        const body = ctx.request.only(this.storeProps);
+        return this.save(ctx, "store", 201, body);
+      }
+
+      public async update(ctx: HttpContextContract) {
+        const body = ctx.request.only(this.updateProps);
+        const { id } = ctx.params;
+        return this.save(ctx, "update", 200, { body, id });
+      }
     };
   };
 }

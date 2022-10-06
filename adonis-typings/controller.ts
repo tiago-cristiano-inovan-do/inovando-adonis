@@ -1,29 +1,45 @@
-declare module "@ioc:Inovando/Controller" {
-  import { LucidModel } from "@ioc:Adonis/Lucid/Orm";
-  import { CrudRepository } from "@ioc:Inovando/CrudRepository";
-  import CrudControllerInterface from "@ioc:Inovando/CrudControllerInterface";
-  import { ResponseDTO } from "@ioc:Inovando/Dto";
+declare module "@ioc:Inovando/Decorators/Controller" {
   import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+  import { TransformerAbstract } from "@ioc:Adonis/Addons/Bumblebee";
 
-  class CrudController<Model extends LucidModel>
-    implements CrudControllerInterface<Model>
-  {
-    protected errorsRequest: any;
-    protected transformer: any;
-    protected repository: any;
-    protected fillableProps: string[];
-    protected validators: {
-      store: {
-        validatorClass: null;
-      };
-    };
-    index(ctx: HttpContextContract): Promise<ResponseDTO<Model>>;
-    store(ctx: HttpContextContract): Promise<void>;
-    update(ctx: HttpContextContract): Promise<void>;
-    private save;
-    show(ctx: HttpContextContract): Promise<any>;
-    destroy(ctx: HttpContextContract): Promise<void>;
-    new();
+  interface CrudControllerDecoratorInterface {
+    storeProps: Array<string>;
+    updateProps: Array<string>;
+    repository: any;
+    validators?: any;
+    transformer?: typeof TransformerAbstract;
   }
-  export { CrudController };
+  export default function CrudController(
+    props: CrudControllerDecoratorInterface
+  ): <T extends new (...args: any[]) => {}>(
+    classConstructor: T
+  ) => {
+    new (...args: any[]): {
+      storeProps: string[];
+      updateProps: string[];
+      repository: any;
+      validators: any;
+      transformer: any;
+      errorsRequest: any;
+      index(ctx: HttpContextContract): Promise<{
+        pagination: {
+          page: any;
+          firstPage: any;
+          lastPage: any;
+          perPage: any;
+          total: any;
+        };
+        data: any;
+      }>;
+      show(ctx: HttpContextContract): Promise<any>;
+      save(
+        ctx: HttpContextContract,
+        method: any,
+        statusReturn: any,
+        body: any
+      ): Promise<void>;
+      store(ctx: HttpContextContract): Promise<void>;
+      update(ctx: HttpContextContract): Promise<void>;
+    };
+  } & T;
 }

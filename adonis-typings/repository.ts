@@ -1,28 +1,17 @@
-declare module "@ioc:Inovando/CrudRepository" {
-  import { LucidModel } from "@ioc:Adonis/Lucid/Orm";
-  import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-  import WriteRepository from "@ioc:Inovando/WriteRepository";
-  import ReadRepository from "@ioc:Inovando/ReadRepository";
-
-  export interface BaseRepository<Model>
-    extends ReadRepository<Model>,
-      WriteRepository<Model> {}
-  abstract class CrudRepository<Model extends LucidModel>
-    implements BaseRepository<Model>
-  {
-    protected model: Model;
-    protected errosRequest: any;
-    constructor();
-    index(ctx: HttpContextContract): Promise<[Model]>;
-    show(id: Partial<Model>): Promise<any>;
-    store({
-      fillableData: [],
-    }: {
-      fillableData: Iterable<any>;
-    }): Promise<Model>;
-    update(ctx: HttpContextContract): Promise<Model>;
-    destroy(id: string | number): void;
-    afterSave(params: any): Promise<any>;
+declare module "@ioc:Inovando/Decorators/Repository" {
+  interface CrudRepositoryDecoratorInterface {
+    model: any;
+    selectFields?: Array<string>;
+    event: any;
   }
-  export { CrudRepository };
+  export default function CrudRepositoryDecorator<Model>(
+    props: CrudRepositoryDecoratorInterface
+  ): <T extends new (...args: any[]) => {}>(
+    constructor: T
+  ) => {
+    new (...args: any[]): {
+      model: any;
+      index({ qs }: { qs: any }): Promise<Model[]>;
+    };
+  } & T;
 }

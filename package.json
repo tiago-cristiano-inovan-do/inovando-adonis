@@ -37,8 +37,14 @@
     "instructionsMd": "./build/instructions.md",
     "types": "inovando-adonis",
     "providers": [
+      "adonis-bumblebee-ts",
       "inovando-adonis"
-    ]
+    ],
+    "templates": {
+      "config": [
+        "inovando.txt"
+      ]
+    }
   },
   "mrmConfig": {
     "core": false,
@@ -55,6 +61,8 @@
     "build/templates"
   ],
   "dependencies": {
-    "copyfiles": "^2.4.1"
+    "adonis-bumblebee-ts": "^1.0.0",
+    "copyfiles": "^2.4.1",
+    "query-string": "^7.1.1"
   }
 }
