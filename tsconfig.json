@@ -1,6 +1,7 @@
 {
   "extends": "./node_modules/@adonisjs/mrm-preset/_tsconfig",
   "compilerOptions": {
+    "target": "es5",
     "declaration": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,

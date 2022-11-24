@@ -8,10 +8,10 @@ import NoValidator from 'App/Validators/NoValidotor'
 
 @Crud({
   repository: TestRepository,
-  storeProps: ['name', 'cnpj'],
-  updateProps: [],
+  storeProps: ['name', 'email'],
+  updateProps: ['name'],
   validators: {
-    store: EmpresaValidator,
+    store: NoValidator,
     update: NoValidator,
   },
   transformer: BaseTransformer,

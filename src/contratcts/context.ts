@@ -1,6 +1,9 @@
 declare module "@ioc:Adonis/Core/HttpContext" {
   interface HttpContextContract {
-    transform: any;
+    transform: {
+      withContext: Function,
+      item: Function
+    };
     bouncer: any;
     filter: any;
   }

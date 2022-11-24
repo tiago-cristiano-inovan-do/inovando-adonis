@@ -1,38 +1,29 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import BaseTransformer from "../Transformers/BaseTranformer";
-import NoValidator from "../Validators/NoValidator";
 
-interface CrudControllerDecoratorInterface {
-  storeProps: Array<string>;
-  updateProps: Array<string>;
-  repository: any;
-  validators?: any;
-  transformer?: any;
-}
+import {
+  IndexReturnInterface,
+  CrudControllerInterface,
+  OptionsCrud,
+} from "@ioc:Inovando/Decorators/Controller";
 
-const defaultValidators = {
-  store: NoValidator,
-  update: NoValidator,
-};
-
-export default function CrudController(
-  props: CrudControllerDecoratorInterface
-) {
+export default function CrudControllerOld<Model>(propsDecorator: OptionsCrud) {
   return <T extends { new (...args: any[]): {} }>(classConstructor: T) => {
-    return class extends classConstructor {
-      public storeProps = props.storeProps;
-      public updateProps = props.updateProps;
-      public repository = props.repository;
-      public validators = props.validators || defaultValidators;
-      public transformer = props.transformer;
+    return class
+      extends classConstructor
+      implements CrudControllerInterface<Model>
+    {
+      public options: OptionsCrud = propsDecorator;
       public errorsRequest: any;
       constructor(...args: any[]) {
         super(...args);
       }
-      public async index(ctx: HttpContextContract) {
+
+      public async index(
+        ctx: HttpContextContract
+      ): Promise<IndexReturnInterface<Model>> {
         const { transform } = ctx;
         const qs = ctx.request.qs();
-        const list = await this.repository.index({ qs });
+        const list = await this.options.repository.index({ qs });
         const { currentPage, firstPage, lastPage, perPage, total, ...rest } =
           list;
 
@@ -48,14 +39,14 @@ export default function CrudController(
           pagination,
           data: await transform
             .withContext(ctx)
-            .collection(rest, this.transformer),
+            .collection(rest, this.options.transformer),
         };
       }
 
       public async show(ctx: HttpContextContract) {
         const { id } = ctx.params;
-        const showItem = await this.repository.show(id);
-        return ctx.transform.item(showItem, this.transformer);
+        const showItem = await this.options.repository.show(id);
+        return ctx.transform.item(showItem, this.options.transformer);
       }
 
       public async save(
@@ -65,26 +56,18 @@ export default function CrudController(
         body: any
       ) {
         const validRequest = await ctx.request.validate(
-          this.validators[method]
+          this.options.validators[method]
         );
         if (!validRequest) {
           return ctx.response.badRequest(this.errorsRequest);
         }
-
-        const newObject = await this.repository[method](body);
-
+        const newObject = await this.options.repository[method](body);
         return ctx.response.status(statusReturn).json(newObject);
       }
 
       public async store(ctx: HttpContextContract) {
-        const body = ctx.request.only(this.storeProps);
+        const body = ctx.request.only(this.options.storeProps);
         return this.save(ctx, "store", 201, body);
-      }
-
-      public async update(ctx: HttpContextContract) {
-        const body = ctx.request.only(this.updateProps);
-        const { id } = ctx.params;
-        return this.save(ctx, "update", 200, { body, id });
       }
     };
   };

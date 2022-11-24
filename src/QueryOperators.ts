@@ -5,7 +5,7 @@ interface OperatorQueryParam {
 }
 
 const Operatos = {
-  "=": ({ query, param, value }) => {
+  "=": ({ query, param, value }: OperatorQueryParam) => {
     query.where(`${param}`, value);
   },
   $ilike: ({ query, param, value }: OperatorQueryParam) => {

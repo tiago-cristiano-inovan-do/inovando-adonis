@@ -1,45 +1,45 @@
 declare module "@ioc:Inovando/Decorators/Controller" {
   import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
   import { TransformerAbstract } from "@ioc:Adonis/Addons/Bumblebee";
+  import { CrudRepositoryInterface } from "@ioc:Inovando/Decorators/Repository";
 
-  interface CrudControllerDecoratorInterface {
+  export interface Pagination {
+    page: number;
+    firstPage: number;
+    lastPage: number;
+    perPage: number;
+    total: number;
+  }
+
+  export interface IndexReturnInterface<Model> {
+    pagination: Pagination;
+    data: Model[];
+  }
+
+  export interface OptionsCrud {
     storeProps: Array<string>;
     updateProps: Array<string>;
-    repository: any;
+    repository: Required<CrudRepositoryInterface<any>>;
     validators?: any;
     transformer?: typeof TransformerAbstract;
   }
-  export default function CrudController(
-    props: CrudControllerDecoratorInterface
-  ): <T extends new (...args: any[]) => {}>(
-    classConstructor: T
-  ) => {
-    new (...args: any[]): {
-      storeProps: string[];
-      updateProps: string[];
-      repository: any;
-      validators: any;
-      transformer: any;
-      errorsRequest: any;
-      index(ctx: HttpContextContract): Promise<{
-        pagination: {
-          page: any;
-          firstPage: any;
-          lastPage: any;
-          perPage: any;
-          total: any;
-        };
-        data: any;
-      }>;
-      show(ctx: HttpContextContract): Promise<any>;
-      save(
-        ctx: HttpContextContract,
-        method: any,
-        statusReturn: any,
-        body: any
-      ): Promise<void>;
-      store(ctx: HttpContextContract): Promise<void>;
-      update(ctx: HttpContextContract): Promise<void>;
-    };
-  } & T;
+
+  export interface CrudControllerInterface<T> {
+    options: OptionsCrud;
+    index?(ctx: HttpContextContract): Promise<IndexReturnInterface<T>>;
+    show?(ctx: HttpContextContract): Promise<T>;
+    create?(ctx: HttpContextContract): Promise<T>;
+    bulkCreate?(ctx: HttpContextContract): Promise<T>;
+    update?(ctx: HttpContextContract): Promise<T[]>;
+    bulkUpdate?(ctx: HttpContextContract): Promise<T[]>;
+    delete?(ctx: HttpContextContract): Promise<T>;
+    bulckdelete?(ctx: HttpContextContract): Promise<T>;
+  }
+
+  export interface CrudControllerFactory {
+    target: any;
+    options: OptionsCrud;
+    constructor(target: any, options: OptionsCrud);
+    index(ctx: HttpContextContract): Promise<void>;
+  }
 }

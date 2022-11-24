@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { ApplicationContract } from "@ioc:Adonis/Core/Application";
 
 export default class InovandoProvider {
@@ -8,7 +9,7 @@ export default class InovandoProvider {
   public async register() {
     try {
       const CrudControllerDecorator = await import(
-        "../src/Decorators/CrudController"
+        "../src/Decorators/Controller"
       );
 
       const { default: CrudRepositoryDecorator } = await import(
